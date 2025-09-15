@@ -28,4 +28,17 @@ jobs:
       - name: Run tests
         run: npm test || echo "No tests found, would add tests in a real project"
 
+  gitleaks-scan:
+    runs-on: Agent-1
+    needs: test
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Gitleaks Setup
+      uses: gitleaks/gitleaks-action@v2
+
+    - name: Gitleaks Scan
+      run: |
+        gitleaks detect --source ./src --exit-code 1
   
