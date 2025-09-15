@@ -32,13 +32,32 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Gitleaks Setup
-      uses: gitleaks/gitleaks-action@v2
+      - name: Gitleaks Setup
+        uses: gitleaks/gitleaks-action@v2
 
-    - name: Gitleaks Scan
-      run: |
-        gitleaks detect --source ./src --exit-code 1
+      - name: Gitleaks Scan
+        run: |
+          gitleaks detect --source ./src --exit-code 1
   
+  sonarqube:
+    runs-on: ubuntu-latest
+    needs: gitleaks-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: src           # 👈 instead of working-directory
+          args: >
+            -Dsonar.projectKey=myorg_src
+            -Dsonar.projectName=myorg_src
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONARQUBE_URL }}
